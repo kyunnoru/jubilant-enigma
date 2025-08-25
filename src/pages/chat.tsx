@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import Link from 'next/link';
+import AppNavbar from '../components/landing/Navbar';
 
 interface Message {
   id: string;
@@ -84,10 +84,10 @@ export default function ChatPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+          <p className="text-gray-600" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
             Loading...
           </p>
         </div>
@@ -110,46 +110,27 @@ export default function ChatPage() {
         </style>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-        {/* Navigation */}
-        <nav className="px-6 py-4 border-b border-slate-200 bg-white/80 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <Link href="/dashboard" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">N</span>
-                </div>
-                <span className="text-xl font-semibold text-slate-900" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-                  Neurvia
-                </span>
-              </Link>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <span className="text-slate-700" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-                Welcome, {session.user?.name || 'User'}
-              </span>
-            </div>
-          </div>
-        </nav>
+      <div className="min-h-screen bg-gray-50">
+        {/* Use the main AppNavbar */}
+        <AppNavbar />
 
         {/* Main Content */}
         <main className="max-w-4xl mx-auto px-6 py-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-light text-slate-900 mb-4" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
               Chat with Your
               <br />
-              <span className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-700 bg-clip-text text-transparent">
                 AI Career Advisor
               </span>
             </h1>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
               Get personalized guidance on your career path, academic choices, and personal development. Ask anything!
             </p>
           </div>
 
           {/* Chat Container */}
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
             {/* Chat Header */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4">
               <div className="flex items-center space-x-3">
@@ -170,7 +151,7 @@ export default function ChatPage() {
             </div>
 
             {/* Messages */}
-            <div className="h-96 overflow-y-auto p-6 space-y-4">
+            <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gray-50">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -180,13 +161,13 @@ export default function ChatPage() {
                     className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
                       message.sender === 'user'
                         ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white'
-                        : 'bg-slate-100 text-slate-900'
+                        : 'bg-white text-gray-900 shadow-sm border border-gray-200'
                     }`}
                     style={{ fontFamily: 'Red Hat Display, sans-serif' }}
                   >
                     <p className="text-sm leading-relaxed">{message.text}</p>
                     <p className={`text-xs mt-2 ${
-                      message.sender === 'user' ? 'text-blue-100' : 'text-slate-500'
+                      message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                     }`}>
                       {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -196,11 +177,11 @@ export default function ChatPage() {
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-100 text-slate-900 px-4 py-3 rounded-2xl">
+                  <div className="bg-white text-gray-900 px-4 py-3 rounded-2xl shadow-sm border border-gray-200">
                     <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -210,14 +191,14 @@ export default function ChatPage() {
             </div>
 
             {/* Input Form */}
-            <div className="border-t border-slate-200 p-6">
+            <div className="border-t border-gray-200 p-6 bg-white">
               <form onSubmit={handleSubmit} className="flex space-x-4">
                 <input
                   type="text"
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
                   placeholder="Ask me anything about your career..."
-                  className="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                   style={{ fontFamily: 'Red Hat Display, sans-serif' }}
                   disabled={isLoading}
                 />
@@ -234,8 +215,8 @@ export default function ChatPage() {
           </div>
 
           {/* Quick Questions */}
-          <div className="mt-8 bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
-            <h3 className="text-2xl font-light text-slate-900 mb-6 text-center" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
+          <div className="mt-8 bg-white rounded-2xl shadow-lg border border-gray-200 p-8">
+            <h3 className="text-2xl font-semibold text-gray-900 mb-6 text-center" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
               Quick Questions to Get Started
             </h3>
             <div className="grid md:grid-cols-2 gap-4">
@@ -248,10 +229,10 @@ export default function ChatPage() {
                 <button
                   key={index}
                   onClick={() => setInputText(question)}
-                  className="p-4 text-left bg-slate-50 hover:bg-slate-100 rounded-xl transition-colors duration-200 border border-slate-200"
+                  className="p-4 text-left bg-gray-50 hover:bg-gray-100 rounded-xl transition-colors duration-200 border border-gray-200 text-gray-700"
                   style={{ fontFamily: 'Red Hat Display, sans-serif' }}
                 >
-                  <p className="text-slate-700 text-sm">{question}</p>
+                  <p className="text-sm">{question}</p>
                 </button>
               ))}
             </div>

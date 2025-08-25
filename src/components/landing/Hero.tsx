@@ -50,9 +50,6 @@ const Hero = () => {
     <section className="gradient-bg min-h-screen flex items-center justify-center relative z-10 px-6">
       <div className="max-w-6xl mx-auto text-center relative">
         <div className="mb-8 section-reveal">
-          <span className="inline-block px-6 py-3 bg-white/20 text-white rounded-full text-sm font-semibold backdrop-blur-sm border border-white/30" style={{ fontFamily: 'Inter, sans-serif' }}>
-            🚀 AI-Powered Career Discovery
-          </span>
         </div>
         
         <h1 className="text-6xl md:text-8xl font-black leading-none text-white mb-8 section-reveal" style={{ fontFamily: 'Space Grotesk, sans-serif', animationDelay: '0.2s' }}>
