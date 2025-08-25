@@ -2,12 +2,12 @@
 
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { useNeurviaStore } from '@/store/neurviaStore';
-import ProgressBar from '@/components/ProgressBar';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { useNeurviaStore } from '../../store/neurviaStore';
+import ProgressBar from '../../components/ProgressBar';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { FormEvent, useState, useEffect } from 'react';
 import axios from 'axios';
-import FlowLayout from '@/components/FlowLayout';
+import FlowLayout from '../../components/FlowLayout';
 
 
 export default function Step3Page() {
