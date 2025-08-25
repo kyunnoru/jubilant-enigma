@@ -1,9 +1,9 @@
 // src/pages/neurvia/step-2.tsx
 
 import { useRouter } from 'next/router';
-import { useNeurviaStore } from '@/store/neurviaStore';
+import { useNeurviaStore } from '../../store/neurviaStore';
 import { FormEvent, useState, useEffect, useRef } from 'react';
-import FlowLayout from '@/components/FlowLayout';
+import FlowLayout from '../../components/FlowLayout';
 
 export default function Step2Page() {
   const router = useRouter();

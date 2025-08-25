@@ -62,9 +62,19 @@ export default function Step3Page() {
         throw new Error("Respons dari server tidak valid.");
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       // 6. Jika gagal, tampilkan pesan error
-      const errorMessage = err.response?.data?.message || err.message || "Terjadi kesalahan yang tidak diketahui.";
+      let errorMessage = "Terjadi kesalahan yang tidak diketahui.";
+      
+      if (typeof err === 'object' && err !== null) {
+        if ('response' in err) {
+          const axiosError = err as { response?: { data?: { message?: string } } };
+          errorMessage = axiosError.response?.data?.message || "Terjadi kesalahan pada server";
+        } else if ('message' in err) {
+          errorMessage = (err as { message: string }).message;
+        }
+      }
+      
       setError(`Gagal membuat laporan: ${errorMessage}`);
       setIsLoading(false); // Hentikan loading agar pengguna bisa mencoba lagi
     }
@@ -88,7 +98,7 @@ export default function Step3Page() {
     >
       <h2 className="text-2xl font-bold text-gray-800 mb-2">Sedikit Tentang Anda</h2>
       <p className="text-gray-600 mb-6">
-        Jawabanmu di sini memberikan "sentuhan manusia" pada laporan AI kami.
+        Jawabanmu di sini memberikan &quot;sentuhan manusia&quot; pada laporan AI kami.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
