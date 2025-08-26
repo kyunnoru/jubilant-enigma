@@ -1,341 +1,149 @@
-// src/pages/neurvia/step-1C.tsx
+// src/pages/neurvia/step-1.tsx
 
 import { useRouter } from 'next/router';
 import { useNeurviaStore } from '../../store/neurviaStore';
 import FlowLayout, { STEP_TITLES } from '../../components/FlowLayout';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import Head from 'next/head';
+import QuestionLikert from '../../components/QuestionLikert';
 import SubProgressBar from '../../components/SubProgressBar';
-import QuestionMultipleChoice from '../../components/QuestionMultipleChoice'; // <-- Impor komponen baru
 
-// --- Data Pertanyaan VAK yang Anda berikan ---
-const vakQuestions = [
-  {
-    id: 1,
-    question: 'Saat mempelajari sesuatu yang baru, kamu lebih suka...',
-    options: {
-      v: 'Melihat diagram atau video',
-      a: 'Mendengarkan penjelasan',
-      k: 'Langsung mencoba sendiri'
-    }
-  },
-  {
-    id: 2,
-    question: 'Saat membaca buku, kamu lebih suka...',
-    options: {
-      v: 'Membayangkan visualisasinya',
-      a: 'Membaca keras-keras',
-      k: 'Membuat catatan sambil membaca'
-    }
-  },
-  {
-    id: 3,
-    question: 'Kamu lebih mudah mengingat...',
-    options: {
-      v: 'Gambar atau warna',
-      a: 'Suara atau musik',
-      k: 'Aktivitas yang kamu lakukan'
-    }
-  },
-  {
-    id: 4,
-    question: 'Dalam kelas, kamu lebih fokus saat...',
-    options: {
-      v: 'Ada presentasi visual',
-      a: 'Guru berbicara jelas',
-      k: 'Ada praktik langsung'
-    }
-  },
-  {
-    id: 5,
-    question: 'Kamu lebih suka belajar dengan...',
-    options: {
-      v: 'Melihat slide atau grafik',
-      a: 'Mendengarkan rekaman',
-      k: 'Mengerjakan langsung atau simulasi'
-    }
-  },
-  {
-    id: 6,
-    question: 'Ketika orang menjelaskan arah jalan, kamu lebih suka...',
-    options: {
-      v: 'Melihat peta',
-      a: 'Mendengarnya dijelaskan',
-      k: 'Menelusurinya sendiri'
-    }
-  },
-  {
-    id: 7,
-    question: 'Kamu merasa paling nyaman saat belajar...',
-    options: {
-      v: 'Di tempat terang dan tenang',
-      a: 'Saat ada musik lembut',
-      k: 'Dengan bergerak bebas'
-    }
-  },
-  {
-    id: 8,
-    question: 'Ketika marah atau stres, kamu cenderung...',
-    options: {
-      v: 'Membayangkan solusi',
-      a: 'Bicara dengan seseorang',
-      k: 'Melakukan sesuatu (jalan, nulis)'
-    }
-  },
-  {
-    id: 9,
-    question: 'Gaya mencatatmu...',
-    options: {
-      v: 'Skema, warna-warni',
-      a: 'Singkat dan berupa kata-kata',
-      k: 'Jarang mencatat, lebih fokus mencoba'
-    }
-  },
-  {
-    id: 10,
-    question: 'Kamu menyukai guru yang...',
-    options: {
-      v: 'Menggunakan media visual',
-      a: 'Jelas dan ekspresif saat bicara',
-      k: 'Mengajak praktik dan aktif'
-    }
-  },
-  {
-    id: 11,
-    question: 'Saat menonton film, kamu paling menikmati...',
-    options: {
-      v: 'Visual dan sinematografi',
-      a: 'Dialog dan suara karakter',
-      k: 'Adegan aksi atau emosional'
-    }
-  },
-  {
-    id: 12,
-    question: 'Kamu mengingat wajah orang lebih baik daripada...',
-    options: {
-      v: 'Nama mereka',
-      a: 'Suara mereka',
-      k: 'Perasaan saat bersamanya'
-    }
-  },
-  {
-    id: 13,
-    question: 'Dalam diskusi kelompok, kamu biasanya...',
-    options: {
-      v: 'Membuat mind map atau catatan',
-      a: 'Aktif berbicara',
-      k: 'Mengerjakan atau menyusun alat'
-    }
-  },
-  {
-    id: 14,
-    question: 'Saat belajar bahasa asing, kamu lebih suka...',
-    options: {
-      v: 'Menonton film dengan subtitle',
-      a: 'Mendengarkan lagu atau podcast',
-      k: 'Bermain peran atau game'
-    }
-  },
-  {
-    id: 15,
-    question: 'Kamu lebih cepat mengerti...',
-    options: {
-      v: 'Gambar atau infografis',
-      a: 'Penjelasan verbal',
-      k: 'Demonstrasi fisik'
-    }
-  },
-  {
-    id: 16,
-    question: 'Kamu merasa kesulitan belajar jika...',
-    options: {
-      v: 'Tidak ada visual pendukung',
-      a: 'Tidak ada suara atau penjelasan',
-      k: 'Harus duduk diam terlalu lama'
-    }
-  },
-  {
-    id: 17,
-    question: 'Saat presentasi, kamu biasanya...',
-    options: {
-      v: 'Menyiapkan slide menarik',
-      a: 'Latihan berbicara',
-      k: 'Berjalan atau gerak di depan'
-    }
-  },
-  {
-    id: 18,
-    question: 'Di waktu luang, kamu suka...',
-    options: {
-      v: 'Menggambar atau melihat foto',
-      a: 'Mendengarkan musik atau podcast',
-      k: 'Olahraga atau crafting'
-    }
-  },
-  {
-    id: 19,
-    question: 'Kamu lebih suka mengingat sesuatu dengan...',
-    options: {
-      v: 'Melihat catatan atau gambar',
-      a: 'Mengucapkannya keras-keras',
-      k: 'Melakukan aktivitas terkait'
-    }
-  },
-  {
-    id: 20,
-    question: 'Saat ujian, kamu mengingat materi dari...',
-    options: {
-      v: 'Gambar di buku atau papan tulis',
-      a: 'Suara guru saat menjelaskan',
-      k: 'Saat latihan soal atau praktik'
-    }
-  },
-  {
-    id: 21,
-    question: 'Hal yang paling menarik perhatianmu...',
-    options: {
-      v: 'Warna dan bentuk',
-      a: 'Suara atau nada',
-      k: 'Tekstur atau gerakan'
-    }
-  },
-  {
-    id: 22,
-    question: 'Kamu menyukai acara seperti...',
-    options: {
-      v: 'Pameran seni atau visual',
-      a: 'Talkshow atau podcast',
-      k: 'Workshop atau demo langsung'
-    }
-  },
-  {
-    id: 23,
-    question: 'Ketika menghadapi masalah, kamu cenderung...',
-    options: {
-      v: 'Menganalisis dengan grafik/visual',
-      a: 'Berdiskusi',
-      k: 'Mencoba berbagai solusi langsung'
-    }
-  },
-  {
-    id: 24,
-    question: 'Kamu cenderung menyukai...',
-    options: {
-      v: 'Desain dan tampilan',
-      a: 'Lagu dan suara',
-      k: 'Aktivitas fisik atau gerakan'
-    }
-  },
-  {
-    id: 25,
-    question: 'Kamu belajar paling efektif saat...',
-    options: {
-      v: 'Menonton tutorial',
-      a: 'Mendengarkan penjelasan',
-      k: 'Ikut dalam simulasi atau eksperimen'
-    }
-  },
-  {
-    id: 26,
-    question: 'Saat membaca novel, kamu fokus pada...',
-    options: {
-      v: 'Deskripsi visual tempat/karakter',
-      a: 'Percakapan antar tokoh',
-      k: 'Aksi dan kejadian dramatis'
-    }
-  },
-  {
-    id: 27,
-    question: 'Kamu memilih catatan yang...',
-    options: {
-      v: 'Bergambar dan berwarna',
-      a: 'Hanya berisi poin penting',
-      k: 'Disertai coretan hasil percobaan'
-    }
-  },
-  {
-    id: 28,
-    question: 'Kamu menyukai musik karena...',
-    options: {
-      v: 'Video klip dan gaya visual',
-      a: 'Lirik dan suara penyanyi',
-      k: 'Irama dan gerakan saat mendengarnya'
-    }
-  },
-  {
-    id: 29,
-    question: 'Jika kamu menghadapi tugas kelompok...',
-    options: {
-      v: 'Mendesain slide/presentasi',
-      a: 'Menjadi pembicara',
-      k: 'Menyiapkan bahan atau alat'
-    }
-  },
-  {
-    id: 30,
-    question: 'Saat menulis, kamu lebih suka...',
-    options: {
-      v: 'Menghias tulisanmu dengan warna',
-      a: 'Membaca keras-keras tulisannya',
-      k: 'Menulis sambil bergerak atau berdiri'
-    }
-  }
+
+const riasecQuestions = [
+  { id: 'r_1', text: 'Saya suka memperbaiki barang yang rusak.' },
+  { id: 'r_2', text: 'Saya senang bekerja menggunakan tangan, seperti membangun atau memperbaiki sesuatu.' },
+  { id: 'r_3', text: 'Saya menikmati kegiatan di luar ruangan seperti berkebun atau berkemah.' },
+  { id: 'r_4', text: 'Saya merasa nyaman menggunakan alat dan mesin.' },
+  { id: 'r_5', text: 'Saya lebih suka pekerjaan fisik dibanding duduk di depan komputer seharian.' },
+  { id: 'r_6', text: 'Saya tertarik menjadi teknisi atau mekanik.' },
+  { id: 'r_7', text: 'Saya senang bekerja dengan binatang atau tumbuhan.' },
+  { id: 'r_8', text: 'Saya menikmati menggunakan alat berat atau kendaraan besar.' },
+  { id: 'r_9', text: 'Saya lebih suka mengikuti instruksi praktis dibanding menulis laporan.' },
+  { id: 'r_10', text: 'Saya menyukai pekerjaan dengan hasil nyata yang bisa saya lihat atau sentuh.' },
+  { id: 'i_11', text: 'Saya senang memecahkan teka-teki logika atau masalah rumit.' },
+  { id: 'i_12', text: 'Saya penasaran terhadap bagaimana sesuatu bekerja.' },
+  { id: 'i_13', text: 'Saya tertarik membaca artikel sains atau teknologi.' },
+  { id: 'i_14', text: 'Saya suka melakukan eksperimen atau percobaan.' },
+  { id: 'i_15', text: 'Saya menikmati menganalisis data dan grafik.' },
+  { id: 'i_16', text: 'Saya senang melakukan riset atau penelitian.' },
+  { id: 'i_17', text: 'Saya suka menjawab soal matematika atau sains.' },
+  { id: 'i_18', text: 'Saya tertarik pada pertanyaan "mengapa" dan "bagaimana".' },
+  { id: 'i_19', text: 'Saya ingin bekerja sebagai ilmuwan atau peneliti.' },
+  { id: 'i_20', text: 'Saya lebih suka berpikir mendalam daripada melakukan aktivitas fisik.' },
+  { id: 'a_21', text: 'Saya senang menulis puisi, cerita, atau lagu.' },
+  { id: 'a_22', text: 'Saya merasa kreatif dan suka mengekspresikan diri.' },
+  { id: 'a_23', text: 'Saya menikmati menggambar, melukis, atau mendesain.' },
+  { id: 'a_24', text: 'Saya tertarik pada teater, film, atau pertunjukan.' },
+  { id: 'a_25', text: 'Saya suka musik dan mungkin ingin menciptakannya.' },
+  { id: 'a_26', text: 'Saya lebih suka tugas yang bebas dan tidak terlalu terstruktur.' },
+  { id: 'a_27', text: 'Saya sering memiliki ide-ide orisinal.' },
+  { id: 'a_28', text: 'Saya merasa nyaman di lingkungan yang kreatif dan fleksibel.' },
+  { id: 'a_29', text: 'Saya senang membuat kerajinan tangan atau seni visual.' },
+  { id: 'a_30', text: 'Saya tertarik pada profesi seperti desainer, seniman, atau penulis.' },
+  { id: 's_31', text: 'Saya peduli terhadap kesejahteraan orang lain.' },
+  { id: 's_32', text: 'Saya merasa puas saat bisa membantu seseorang.' },
+  { id: 's_33', text: 'Saya senang mendengarkan masalah orang dan memberi saran.' },
+  { id: 's_34', text: 'Saya tertarik menjadi guru, perawat, atau konselor.' },
+  { id: 's_35', text: 'Saya merasa nyaman dalam pekerjaan sosial atau pelayanan masyarakat.' },
+  { id: 's_36', text: 'Saya ingin bekerja di bidang pendidikan atau kesehatan.' },
+  { id: 's_37', text: 'Saya cenderung sabar dan empatik.' },
+  { id: 's_38', text: 'Saya lebih suka bekerja dengan orang daripada dengan data atau mesin.' },
+  { id: 's_39', text: 'Saya senang terlibat dalam kegiatan amal atau sukarela.' },
+  { id: 's_40', text: 'Saya merasa berenergi saat bisa membantu orang lain berkembang.' },
+  { id: 'e_41', text: 'Saya suka memimpin orang lain dalam sebuah proyek.' },
+  { id: 'e_42', text: 'Saya tertarik pada bisnis dan kewirausahaan.' },
+  { id: 'e_43', text: 'Saya percaya diri dalam menyampaikan pendapat di depan umum.' },
+  { id: 'e_44', text: 'Saya menikmati mengambil keputusan penting.' },
+  { id: 'e_45', text: 'Saya termotivasi oleh target dan hasil.' },
+  { id: 'e_46', text: 'Saya suka menjual ide atau produk.' },
+  { id: 'e_47', text: 'Saya tertarik menjadi manajer, pengacara, atau politikus.' },
+  { id: 'e_48', text: 'Saya bisa meyakinkan orang untuk mengikuti ide saya.' },
+  { id: 'e_49', text: 'Saya merasa nyaman mengambil risiko demi kemajuan.' },
+  { id: 'e_50', text: 'Saya percaya saya bisa menjadi pemimpin yang baik.' },
+  { id: 'c_51', text: 'Saya menyukai pekerjaan yang memiliki struktur jelas.' },
+  { id: 'c_52', text: 'Saya senang mengatur dan merapikan dokumen atau barang.' },
+  { id: 'c_53', text: 'Saya tertarik dengan data, angka, dan statistik.' },
+  { id: 'c_54', text: 'Saya menikmati membuat laporan atau tabel.' },
+  { id: 'c_55', text: 'Saya merasa puas saat mengikuti prosedur atau aturan.' },
+  { id: 'c_56', text: 'Saya menyukai pekerjaan administratif atau pengarsipan.' },
+  { id: 'c_57', text: 'Saya percaya bahwa ketepatan dan ketelitian sangat penting.' },
+  { id: 'c_58', text: 'Saya tertarik bekerja di kantor dengan jadwal tetap.' },
+  { id: 'c_59', text: 'Saya merasa nyaman dalam sistem yang rapi dan terorganisir.' },
+  { id: 'c_60', text: 'Saya ingin menjadi akuntan, sekretaris, atau analis data.' }
 ];
 
-export default function Step1CPage() {
+export default function Step1APage() {
   const router = useRouter();
-  const { data: session, status } = useSession({ required: true, onUnauthenticated: () => router.push('/auth/signin') });
-
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push('/auth/signin');
+    },
+  });
+  
   const { psychometric, setPsychometricData } = useNeurviaStore();
-  // State akan menyimpan jawaban seperti: { 1: 'v', 2: 'k', 3: 'a', ... }
-  const [answers, setAnswers] = useState<Record<number, 'v' | 'a' | 'k'>>(() => psychometric.vak || {});
+  const [answers, setAnswers] = useState<Record<string, number>>(() => psychometric.riasec || {});
 
-  const handleSelectAnswer = (questionId: number, value: 'v' | 'a' | 'k') => {
+  const handleSelectAnswer = (questionId: string, value: number) => {
     setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
-  const allQuestionsAnswered = vakQuestions.every(q => answers[q.id] !== undefined);
+  const allQuestionsAnswered = riasecQuestions.every(q => answers[q.id] !== undefined);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!allQuestionsAnswered) return;
     
-    // Simpan data mentah VAK. Scoring (menghitung jumlah v, a, k) akan dilakukan di backend.
-    setPsychometricData({ vak: answers });
+    // Simpan data RIASEC, tanpa menghapus data psikometrik lainnya
+    setPsychometricData({ riasec: answers });
     
-    // Selesai dengan Step 1, sekarang arahkan ke Step 2
-    router.push('/neurvia/step-2');
+    // Arahkan ke bagian BERIKUTNYA dari Step 1
+    router.push('/neurvia/step-1B');
   };
 
-  if (status === 'loading' || !session) return <div>Loading...</div>; // Ganti dengan loading state Anda
+  if (status === 'loading' || !session) {
+    return <div>Loading...</div>; // Tampilkan loading state Anda yang sudah ada
+  }
 
   return (
     <FlowLayout pageTitle="Step 1: Psychometric Assessment" currentStep={1} stepTitles={STEP_TITLES}>
+      <Head>
+        {/* ... Head content Anda ... */}
+      </Head>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          {/* ... Header yang sama seperti step-1 ... */}
+          <h2 className="text-4xl font-light ...">
+            Understanding Your <br />
+            <span className="font-semibold ...">Interests & Personality</span>
+          </h2>
         </div>
+
         <form onSubmit={handleSubmit}>
-          <SubProgressBar currentPart={3} totalParts={3} partTitle="Gaya Belajar (VAK)" />
+          {/* Progress bar untuk di dalam Step 1 */}
+          <SubProgressBar currentPart={1} totalParts={3} partTitle="Minat Karir" />
+          
           <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-lg border border-slate-100">
-            {vakQuestions.map((q) => (
-              <QuestionMultipleChoice
-                key={q.id}
-                questionId={q.id}
-                questionText={q.question}
-                options={q.options}
-                selectedValue={answers[q.id] ?? null}
-                onSelect={handleSelectAnswer}
-              />
-            ))}
+            <div className="space-y-4">
+              {riasecQuestions.map((question) => (
+                <QuestionLikert
+                  key={question.id}
+                  questionId={question.id}
+                  questionText={question.text}
+                  selectedValue={answers[question.id] ?? null}
+                  onSelect={handleSelectAnswer}
+                />
+              ))}
+            </div>
           </div>
+          
           <div className="text-center mt-10">
             <button
               type="submit"
               disabled={!allQuestionsAnswered}
-              className="px-8 py-4 bg-slate-900 text-white ... disabled:opacity-50 ..."
+              className="px-8 py-4 bg-slate-900 ... disabled:opacity-50 ..."
             >
-              Continue to Next Step
+              Lanjutkan ke Bagian Berikutnya
             </button>
           </div>
         </form>

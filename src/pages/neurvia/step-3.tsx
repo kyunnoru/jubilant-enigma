@@ -13,10 +13,6 @@ import FlowLayout from '../../components/FlowLayout';
 export default function Step3Page() {
   const router = useRouter();
 
-  // Route guard completely removed to fix infinite loop
-  // We'll add it back later with a better approach
-
-  // 1. Ambil SEMUA data dan aksi yang dibutuhkan dari Zustand
   const { 
     qualitative: initialQualitativeData, 
     setQualitativeData,
