@@ -109,7 +109,7 @@ export default function Step1APage() {
   return (
     <FlowLayout pageTitle="Step 1: Psychometric Assessment" currentStep={1} stepTitles={STEP_TITLES}>
       <Head>
-        {/* ... Head content Anda ... */}
+        <title>Step 1: Psychometric Assessment - Neurvia</title>
       </Head>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
@@ -126,13 +126,15 @@ export default function Step1APage() {
           <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-lg border border-slate-100">
             <div className="space-y-4">
               {riasecQuestions.map((question) => (
-                <QuestionLikert
-                  key={question.id}
-                  questionId={question.id}
-                  questionText={question.text}
-                  selectedValue={answers[question.id] ?? null}
-                  onSelect={handleSelectAnswer}
-                />
+                <div key={question.id}>
+                  <label htmlFor={question.id} className="sr-only">{question.text}</label>
+                  <QuestionLikert
+                    questionId={question.id}
+                    questionText={question.text}
+                    selectedValue={answers[question.id] ?? null}
+                    onSelect={handleSelectAnswer}
+                  />
+                </div>
               ))}
             </div>
           </div>
@@ -142,6 +144,7 @@ export default function Step1APage() {
               type="submit"
               disabled={!allQuestionsAnswered}
               className="px-8 py-4 bg-slate-900 ... disabled:opacity-50 ..."
+              aria-label={allQuestionsAnswered ? "Lanjutkan ke bagian berikutnya" : "Silakan jawab semua pertanyaan terlebih dahulu"}
             >
               Lanjutkan ke Bagian Berikutnya
             </button>
