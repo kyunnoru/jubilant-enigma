@@ -9,7 +9,6 @@ import Head from 'next/head';
 import QuestionLikert from '../../components/QuestionLikert';
 import SubProgressBar from '../../components/SubProgressBar';
 
-
 const riasecQuestions = [
   { id: 'r_1', text: 'Saya suka memperbaiki barang yang rusak.' },
   { id: 'r_2', text: 'Saya senang bekerja menggunakan tangan, seperti membangun atau memperbaiki sesuatu.' },
@@ -113,9 +112,9 @@ export default function Step1APage() {
       </Head>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-light ...">
+          <h2 className="text-4xl font-light text-slate-800 leading-tight">
             Understanding Your <br />
-            <span className="font-semibold ...">Interests & Personality</span>
+            <span className="font-semibold text-slate-900">Interests & Personality</span>
           </h2>
         </div>
 
@@ -144,7 +143,6 @@ export default function Step1APage() {
               type="submit"
               disabled={!allQuestionsAnswered}
               className="px-8 py-4 bg-slate-900 ... disabled:opacity-50 ..."
-              aria-label={allQuestionsAnswered ? "Lanjutkan ke bagian berikutnya" : "Silakan jawab semua pertanyaan terlebih dahulu"}
             >
               Lanjutkan ke Bagian Berikutnya
             </button>
