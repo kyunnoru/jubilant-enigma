@@ -13,22 +13,22 @@ type ChatMessage = { sender: 'user' | 'ai'; text: string; timestamp: number };
 // --- Komponen Avatar ---
 const Avatar = ({ type, size = 'md' }: { type: 'user' | 'ai'; size?: 'sm' | 'md' | 'lg' }) => {
   const sizeClasses = {
-    sm: 'h-6 w-6',
-    md: 'h-8 w-8',
-    lg: 'h-10 w-10'
+    sm: 'h-6 w-6 text-xs',
+    md: 'h-8 w-8 text-sm',
+    lg: 'h-10 w-10 text-lg'
   };
 
   if (type === 'user') {
     return (
-      <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-sm shadow-lg`}>
+      <div className={`${sizeClasses[size]} rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center text-white font-semibold shadow-sm border border-slate-200`}>
         U
       </div>
     );
   }
 
   return (
-    <div className={`${sizeClasses[size]} rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-lg overflow-hidden`}>
-      <Image src="/logo.svg" alt="Neurvia AI" width={size === 'sm' ? 16 : size === 'md' ? 20 : 24} height={size === 'sm' ? 16 : size === 'md' ? 20 : 24} />
+    <div className={`${sizeClasses[size]} rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold shadow-sm border border-slate-200`}>
+      N
     </div>
   );
 };
@@ -38,19 +38,21 @@ const MessageBubble = ({ message }: { message: ChatMessage }) => {
   const isUser = message.sender === 'user';
   
   return (
-    <div className={`flex items-end gap-3 mb-4 ${isUser ? 'flex-row-reverse' : ''}`}>
-      <Avatar type={message.sender} />
+    <div className={`flex items-start gap-4 mb-8 ${isUser ? 'flex-row-reverse' : ''}`}>
+      <div className="flex-shrink-0">
+        <Avatar type={message.sender} />
+      </div>
       <div className={`max-w-[75%] ${isUser ? 'flex flex-col items-end' : ''}`}>
-        <div className={`rounded-2xl px-4 py-3 ${
+        <div className={`rounded-2xl px-6 py-4 ${
           isUser 
-            ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-md' 
-            : 'bg-white text-slate-800 shadow-sm border border-slate-100 rounded-bl-md'
+            ? 'bg-slate-900 text-white shadow-lg' 
+            : 'bg-white text-slate-800 shadow-sm border border-slate-100'
         }`}>
-          <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : 'prose-slate'}`}>
+          <div className={`prose prose-sm max-w-none ${isUser ? 'prose-invert' : 'prose-slate'} prose-p:leading-relaxed`}>
             <ReactMarkdown>{message.text}</ReactMarkdown>
           </div>
         </div>
-        <div className="text-xs text-slate-400 mt-1 px-1">
+        <div className={`text-xs text-slate-400 mt-2 px-2 ${isUser ? 'text-right' : ''}`}>
           {new Date(message.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
         </div>
       </div>
@@ -60,17 +62,14 @@ const MessageBubble = ({ message }: { message: ChatMessage }) => {
 
 // --- Komponen Context Bar ---
 const ContextBar = ({ reportId }: { reportId: string | string[] | undefined }) => (
-  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-3 mb-4">
-    <div className="flex items-center gap-3">
-      <div className="h-8 w-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
+  <div className="bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-4 mb-8">
+    <div className="flex items-center gap-4">
+      <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">
+        N
       </div>
       <div>
         <h3 className="text-sm font-semibold text-slate-800">Laporan #{reportId}</h3>
-        <p className="text-xs text-slate-600">Tanya apapun tentang laporan ini</p>
+        <p className="text-xs text-slate-600 leading-relaxed">Tanya apapun tentang laporan psikometrik dan rekomendasi karir Anda</p>
       </div>
     </div>
   </div>
@@ -78,10 +77,12 @@ const ContextBar = ({ reportId }: { reportId: string | string[] | undefined }) =
 
 // --- Komponen Loading Dots ---
 const TypingIndicator = () => (
-  <div className="flex items-end gap-3 mb-4">
-    <Avatar type="ai" />
-    <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
-      <div className="flex items-center space-x-1">
+  <div className="flex items-start gap-4 mb-8">
+    <div className="flex-shrink-0">
+      <Avatar type="ai" />
+    </div>
+    <div className="bg-white border border-slate-100 rounded-2xl px-6 py-4 shadow-sm">
+      <div className="flex items-center space-x-2">
         <div className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
         <div className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
         <div className="h-2 w-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
@@ -96,25 +97,27 @@ const Sidebar = ({ isOpen, onClose, reportId }: { isOpen: boolean; onClose: () =
     {/* Overlay */}
     {isOpen && (
       <div 
-        className="fixed inset-0 bg-black bg-opacity-20 z-40 transition-opacity"
+        className="fixed inset-0 bg-slate-900 bg-opacity-20 z-40 transition-opacity backdrop-blur-sm"
         onClick={onClose}
       />
     )}
     
     {/* Sidebar */}
-    <aside className={`fixed left-0 top-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${
+    <aside className={`fixed left-0 top-0 h-full w-80 bg-white shadow-2xl border-r border-slate-200 transform transition-transform duration-300 ease-in-out z-50 ${
       isOpen ? 'translate-x-0' : '-translate-x-full'
     }`}>
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-slate-200">
+        <div className="flex items-center justify-between p-6 border-b border-slate-100">
           <div className="flex items-center space-x-3">
-            <Image src="/logo.svg" alt="Neurvia Logo" width={32} height={32} />
+            <div className="h-8 w-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+              N
+            </div>
             <span className="text-xl font-semibold text-slate-900">Neurvia</span>
           </div>
           <button 
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" x2="6" y1="6" y2="18"/>
@@ -124,27 +127,34 @@ const Sidebar = ({ isOpen, onClose, reportId }: { isOpen: boolean; onClose: () =
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4">
-          <button className="w-full text-left rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 text-sm font-semibold text-white hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg">
+        <div className="flex-1 p-6">
+          <button className="w-full text-left rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 text-sm font-semibold text-white hover:from-slate-900 hover:to-slate-800 transition-all shadow-lg">
             + Chat Baru
           </button>
           
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Riwayat Chat</h3>
-            <div className="bg-slate-50 rounded-lg p-4 text-center">
-              <p className="text-sm text-slate-500">Coming Soon</p>
-              <p className="text-xs text-slate-400 mt-1">Fitur masih dalam pengembangan</p>
+          <div className="mt-8">
+            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">Riwayat Chat</h3>
+            <div className="bg-slate-50 rounded-xl p-6 text-center border border-slate-100">
+              <div className="text-slate-400 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" x2="12" y1="8" y2="16"/>
+                  <line x1="8" x2="16" y1="12" y2="12"/>
+                </svg>
+              </div>
+              <p className="text-sm text-slate-600 font-medium">Coming Soon</p>
+              <p className="text-xs text-slate-500 mt-1">Fitur masih dalam pengembangan</p>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-200">
+        <div className="p-6 border-t border-slate-100">
           <Link 
             href={`/neurvia/result/${reportId}`} 
-            className="flex items-center gap-2 rounded-lg p-3 text-sm text-slate-600 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-3 rounded-xl p-4 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5"/>
               <path d="m12 19-7-7 7-7"/>
             </svg>
@@ -232,54 +242,84 @@ export default function ChatPage() {
   return (
     <>
       <Head>
-        <title>Chat with Neurvia AI - Report #{id}</title>
+        <title>Chat dengan Neurvia AI - Report #{id}</title>
+        <meta name="description" content="Tanya apapun tentang laporan psikometrik Anda dengan Neurvia AI" />
       </Head>
 
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} reportId={id} />
 
       {/* Main Container */}
-      <div className="h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         
         {/* Header */}
-        <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsSidebarOpen(true)}
-              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" x2="21" y1="6" y2="6"/>
-                <line x1="3" x2="21" y1="12" y2="12"/>
-                <line x1="3" x2="21" y1="18" y2="18"/>
-              </svg>
-            </button>
-            <div className="flex items-center space-x-3">
-              <Image src="/logo.svg" alt="Neurvia Logo" width={28} height={28} />
-              <h1 className="text-lg font-semibold text-slate-800">Neurvia AI</h1>
+        <header className="bg-white/95 backdrop-blur-sm border-b border-slate-100 px-6 py-4 sticky top-0 z-30">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" x2="21" y1="6" y2="6"/>
+                  <line x1="3" x2="21" y1="12" y2="12"/>
+                  <line x1="3" x2="21" y1="18" y2="18"/>
+                </svg>
+              </button>
+              <div className="flex items-center space-x-3">
+                <div className="h-7 w-7 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                  N
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold text-slate-900">Neurvia AI</h1>
+                  <p className="text-xs text-slate-500">Asisten Karir Cerdas</p>
+                </div>
+              </div>
             </div>
+            <Link 
+              href={`/neurvia/result/${id}`}
+              className="text-sm text-slate-600 hover:text-slate-900 font-medium transition-colors"
+            >
+              Lihat Laporan
+            </Link>
           </div>
-          <Link 
-            href={`/neurvia/result/${id}`}
-            className="text-sm text-slate-600 hover:text-slate-800 transition-colors"
-          >
-            Lihat Laporan
-          </Link>
         </header>
 
         {/* Chat Container */}
-        <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-4 py-6">
+        <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full px-6 py-8">
           
           {/* Context Bar */}
           <ContextBar reportId={id} />
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto mb-6 px-2">
+          <div className="flex-1 mb-8">
             {messages.length === 0 && (
-              <div className="text-center py-12">
-                <Avatar type="ai" size="lg" />
-                <h3 className="text-lg font-semibold text-slate-700 mt-4">Halo! 👋</h3>
-                <p className="text-slate-500 mt-2">Tanya apapun tentang laporan Anda. Saya siap membantu!</p>
+              <div className="text-center py-16">
+                <div className="mb-6">
+                  <Avatar type="ai" size="lg" />
+                </div>
+                <h3 className="text-2xl font-light text-slate-700 mb-2">
+                  Halo! <span className="font-semibold">Selamat datang</span> 👋
+                </h3>
+                <p className="text-slate-500 leading-relaxed max-w-md mx-auto">
+                  Saya siap membantu Anda memahami hasil psikometrik dan memberikan wawasan karir yang personal.
+                </p>
+                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                  {[
+                    'Jelaskan hasil tes kepribadian saya',
+                    'Apa karir yang cocok untuk saya?',
+                    'Bagaimana cara mengembangkan keterampilan?',
+                    'Analisis kekuatan dan kelemahan saya'
+                  ].map((suggestion, index) => (
+                    <button 
+                      key={index}
+                      onClick={() => setInputValue(suggestion)}
+                      className="text-left p-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-100 hover:border-slate-200 transition-colors text-sm text-slate-700"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -292,16 +332,16 @@ export default function ChatPage() {
           </div>
 
           {/* Input Area */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
             {/* Attachment Indicator */}
-            <div className="mb-3 flex items-center gap-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-sm font-medium text-blue-700">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <span>laporan.pdf</span>
-                <button className="text-blue-500 hover:text-blue-700 transition-colors">
+                <span>laporan-psikometrik.pdf</span>
+                <button className="text-slate-500 hover:text-slate-700 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" x2="6" y1="6" y2="18"/>
                     <line x1="6" x2="18" y1="6" y2="18"/>
@@ -311,22 +351,22 @@ export default function ChatPage() {
             </div>
 
             {/* Input Field */}
-            <div className="relative flex items-end gap-3">
+            <div className="relative flex items-end gap-4">
               <div className="flex-1 relative">
                 <textarea
                   ref={textareaRef}
-                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-3 pr-4 text-slate-800 placeholder:text-slate-400 focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 transition-all max-h-32"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 p-4 pr-4 text-slate-800 placeholder:text-slate-400 focus:border-slate-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-100 transition-all max-h-32 leading-relaxed"
                   rows={1}
-                  placeholder="Ketik pertanyaan Anda..."
+                  placeholder="Tanyakan apapun tentang laporan Anda..."
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyDown}
                   disabled={isLoading}
-                  style={{ minHeight: '44px' }}
+                  style={{ minHeight: '52px' }}
                 />
               </div>
               <button
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white transition-all hover:from-blue-600 hover:to-blue-700 hover:shadow-lg disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed"
+                className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-slate-800 to-slate-900 text-white transition-all hover:from-slate-900 hover:to-slate-800 hover:shadow-lg disabled:from-slate-300 disabled:to-slate-400 disabled:cursor-not-allowed shadow-sm"
                 onClick={handleSend}
                 disabled={isLoading || !inputValue.trim()}
               >
@@ -337,8 +377,8 @@ export default function ChatPage() {
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 mt-2 px-1">
-              Tekan Enter untuk kirim, Shift+Enter untuk baris baru
+            <p className="text-xs text-slate-400 mt-3 px-1">
+              Tekan <span className="font-medium">Enter</span> untuk kirim, <span className="font-medium">Shift+Enter</span> untuk baris baru
             </p>
           </div>
         </main>

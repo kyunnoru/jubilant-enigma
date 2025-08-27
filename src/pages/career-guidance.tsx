@@ -1,423 +1,461 @@
 // src/pages/career-guidance.tsx
+import React, { useState, useEffect } from 'react';
+import { GetServerSideProps } from 'next';
+import { getSession } from 'next-auth/react';
+import PremiumGate from '../components/PremiumGate';
+import DebugSession from '../components/DebugSession'; // Add debug component
 
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
-import AppNavbar from '../components/landing/Navbar';
+interface Question {
+  id: number;
+  text: string;
+  category: 'personality' | 'interests' | 'skills' | 'values';
+  options: {
+    text: string;
+    score: number;
+  }[];
+}
 
-const CareerGuidancePage = () => {
-  const { data: session } = useSession();
-  const [selectedCategory, setSelectedCategory] = useState('explore');
-  const [isQuizStarted, setIsQuizStarted] = useState(false);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
+const CareerGuidancePage: React.FC = () => {
+  const [currentStep, setCurrentStep] = useState<'welcome' | 'assessment' | 'results'>('welcome');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<{ [key: number]: number }>({});
+  const [results, setResults] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Sample career quiz questions
-  const quizQuestions = [
+  const questions: Question[] = [
     {
-      question: "What type of work environment do you prefer?",
+      id: 1,
+      text: "Saya lebih suka bekerja dengan:",
+      category: 'personality',
       options: [
-        "Collaborative team environment",
-        "Independent work with minimal supervision",
-        "Dynamic, fast-paced environment",
-        "Structured, organized environment"
+        { text: "Data dan angka", score: 1 },
+        { text: "Orang-orang", score: 2 },
+        { text: "Ide dan konsep", score: 3 },
+        { text: "Objek fisik", score: 4 },
       ]
     },
     {
-      question: "Which activities do you find most engaging?",
+      id: 2,
+      text: "Dalam situasi kelompok, saya cenderung:",
+      category: 'personality',
       options: [
-        "Problem-solving and analysis",
-        "Creative projects and design",
-        "Helping and mentoring others",
-        "Leading and organizing teams"
+        { text: "Memimpin diskusi", score: 4 },
+        { text: "Menyumbang ide kreatif", score: 3 },
+        { text: "Mendengarkan dan mendukung", score: 2 },
+        { text: "Menganalisis dan mengevaluasi", score: 1 },
       ]
     },
     {
-      question: "What motivates you most in a career?",
+      id: 3,
+      text: "Saya merasa paling energik ketika:",
+      category: 'interests',
       options: [
-        "Making a positive impact on society",
-        "Financial stability and growth",
-        "Personal development and learning",
-        "Recognition and achievement"
+        { text: "Memecahkan masalah kompleks", score: 1 },
+        { text: "Membantu orang lain", score: 2 },
+        { text: "Menciptakan sesuatu yang baru", score: 3 },
+        { text: "Menyelesaikan tugas praktis", score: 4 },
       ]
     },
     {
-      question: "How do you prefer to work with technology?",
+      id: 4,
+      text: "Lingkungan kerja ideal saya adalah:",
+      category: 'values',
       options: [
-        "Developing and programming",
-        "Using existing tools effectively",
-        "Teaching others about technology",
-        "Managing technology projects"
+        { text: "Terstruktur dan dapat diprediksi", score: 1 },
+        { text: "Kolaboratif dan suportif", score: 2 },
+        { text: "Dinamis dan inovatif", score: 3 },
+        { text: "Praktis dan berorientasi hasil", score: 4 },
+      ]
+    },
+    {
+      id: 5,
+      text: "Ketika menghadapi tantangan, saya:",
+      category: 'skills',
+      options: [
+        { text: "Menganalisis data untuk solusi", score: 1 },
+        { text: "Berdiskusi dengan tim", score: 2 },
+        { text: "Mencari pendekatan kreatif", score: 3 },
+        { text: "Langsung bertindak", score: 4 },
       ]
     }
   ];
 
-  const careerPaths = [
-    {
-      title:"Software Engineering",
-      description: "Build applications, websites, and systems that power the digital world",
-      skills: ["Programming", "Problem-solving", "Mathematics", "Logic"],
-      growth: "High",
-      salary: "$70k - $150k",
-      icon: ""
-    },
-    {
-      title: "Data Science",
-      description: "Analyze data to extract insights and drive business decisions",
-      skills: ["Statistics", "Python/R", "Machine Learning", "Communication"],
-      growth: "Very High",
-      salary: "$80k - $160k",
-      icon: ""
-    },
-    {
-      title: "Digital Marketing",
-      description: "Create and execute marketing strategies in the digital landscape",
-      skills: ["Creativity", "Analytics", "Communication", "Strategy"],
-      growth: "High",
-      salary: "$45k - $100k",
-      icon: ""
-    },
-    {
-      title: "Healthcare",
-      description: "Provide medical care and support to improve people's health and wellbeing",
-      skills: ["Empathy", "Science", "Communication", "Critical Thinking"],
-      growth: "High",
-      salary: "$50k - $200k",
-      icon: ""
-    },
-    {
-      title: "Business Analysis",
-      description: "Bridge the gap between business needs and technology solutions",
-      skills: ["Analysis", "Communication", "Strategy", "Technology"],
-      growth: "Medium",
-      salary: "$60k - $120k",
-      icon: ""
-    },
-    {
-      title: "UX/UI Design",
-      description: "Design user-friendly interfaces and experiences for digital products",
-      skills: ["Design", "Psychology", "Prototyping", "Research"],
-      growth: "High",
-      salary: "$55k - $130k",
-      icon: ""
-    }
-  ];
+  const handleAnswerSelect = (score: number) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questions[currentQuestionIndex].id]: score
+    }));
 
-  const handleQuizAnswer = (answerIndex: number) => {
-    const newAnswers = [...quizAnswers, answerIndex];
-    setQuizAnswers(newAnswers);
-
-    if (currentQuestion < quizQuestions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
     } else {
-      // Quiz completed - you could calculate results here
-      setIsQuizStarted(false);
-      setCurrentQuestion(0);
-      setQuizAnswers([]);
-      alert("Quiz completed! Check your personalized recommendations below.");
+      processResults();
     }
   };
 
-  const startQuiz = () => {
-    setIsQuizStarted(true);
-    setCurrentQuestion(0);
-    setQuizAnswers([]);
+  const processResults = async () => {
+    setIsProcessing(true);
+    
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Calculate results based on answers
+    const categoryScores = {
+      analytical: 0,
+      social: 0,
+      creative: 0,
+      practical: 0,
+    };
+
+    Object.values(answers).forEach(score => {
+      switch(score) {
+        case 1: categoryScores.analytical += 1; break;
+        case 2: categoryScores.social += 1; break;
+        case 3: categoryScores.creative += 1; break;
+        case 4: categoryScores.practical += 1; break;
+      }
+    });
+
+    // Determine dominant personality type
+    const dominantType = Object.entries(categoryScores).reduce((a, b) => 
+      categoryScores[a[0] as keyof typeof categoryScores] > categoryScores[b[0] as keyof typeof categoryScores] ? a : b
+    )[0];
+
+    const careerRecommendations = {
+      analytical: {
+        title: "Analytical Thinker",
+        description: "Anda memiliki kecenderungan kuat untuk menganalisis data dan memecahkan masalah kompleks.",
+        careers: [
+          "Data Scientist",
+          "Financial Analyst", 
+          "Research Scientist",
+          "Software Engineer",
+          "Management Consultant"
+        ],
+        strengths: ["Pemikiran logis", "Analisis mendalam", "Problem solving", "Attention to detail"],
+        recommendations: "Fokus pada pengembangan skill teknis dan sertifikasi profesional di bidang yang diminati."
+      },
+      social: {
+        title: "People Person",
+        description: "Anda sangat baik dalam berinteraksi dengan orang lain dan memiliki empati yang tinggi.",
+        careers: [
+          "Human Resources Manager",
+          "Counselor/Therapist",
+          "Teacher/Educator",
+          "Sales Manager",
+          "Social Worker"
+        ],
+        strengths: ["Komunikasi", "Empati", "Teamwork", "Leadership"],
+        recommendations: "Kembangkan kemampuan leadership dan pertimbangkan sertifikasi dalam bidang human development."
+      },
+      creative: {
+        title: "Creative Innovator",
+        description: "Anda memiliki imajinasi yang kuat dan suka menciptakan solusi inovatif.",
+        careers: [
+          "Graphic Designer",
+          "Product Manager",
+          "Marketing Creative",
+          "Architect",
+          "Content Creator"
+        ],
+        strengths: ["Kreativitas", "Inovasi", "Adaptabilitas", "Vision"],
+        recommendations: "Bangun portfolio kreatif dan jaringan profesional di industri kreatif."
+      },
+      practical: {
+        title: "Practical Doer",
+        description: "Anda suka bekerja dengan hal-hal konkret dan menghasilkan hasil yang nyata.",
+        careers: [
+          "Project Manager",
+          "Operations Manager",
+          "Engineer",
+          "Entrepreneur",
+          "Quality Assurance"
+        ],
+        strengths: ["Execution", "Reliability", "Efficiency", "Results-oriented"],
+        recommendations: "Fokus pada pengembangan skill manajemen proyek dan leadership operasional."
+      }
+    };
+
+    setResults({
+      dominantType,
+      profile: careerRecommendations[dominantType as keyof typeof careerRecommendations],
+      scores: categoryScores
+    });
+
+    setIsProcessing(false);
+    setCurrentStep('results');
   };
 
-  const categories = [
-    { id: 'explore', name: 'Explore Careers', icon: '🔍' },
-    { id: 'quiz', name: 'Career Quiz', icon: '📝' },
-    { id: 'skills', name: 'Skill Development', icon: '🚀' },
-    { id: 'resources', name: 'Resources', icon: '📚' }
-  ];
+  const resetAssessment = () => {
+    setCurrentStep('welcome');
+    setCurrentQuestionIndex(0);
+    setAnswers({});
+    setResults(null);
+  };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <AppNavbar />
-      
-      <div className="max-w-7xl mx-auto py-8 px-6">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Career Guidance Hub
-          </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover your ideal career path with personalized guidance, interactive assessments, and comprehensive resources tailored just for you.
-          </p>
-        </div>
+  const CareerAssessmentContent = () => (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {currentStep === 'welcome' && (
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                Asesmen Panduan Karier Premium
+              </h1>
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                Temukan jalur karier yang tepat untuk Anda dengan asesmen komprehensif 
+                yang menganalisis kepribadian, minat, keterampilan, dan nilai-nilai Anda.
+              </p>
+              
+              <div className="grid md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
+                  <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2v1a1 1 0 102 0V3h6v1a1 1 0 102 0V3a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm8 8a1 1 0 01-1-1V8a1 1 0 10-2 0v4a1 1 0 01-1 1H6a1 1 0 100 2h2a1 1 0 001-1v-1h2v1a1 1 0 001 1h2a1 1 0 100-2h-2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Analisis Kepribadian</h3>
+                  <p className="text-gray-600 text-sm">Pahami tipe kepribadian dan preferensi kerja Anda</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl">
+                  <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Rekomendasi Karier</h3>
+                  <p className="text-gray-600 text-sm">Dapatkan daftar karier yang sesuai dengan profil Anda</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
+                  <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4 mx-auto">
+                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Panduan Pengembangan</h3>
+                  <p className="text-gray-600 text-sm">Rencana aksi untuk mengembangkan karier impian</p>
+                </div>
+              </div>
 
-        {/* Category Navigation */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-2 flex space-x-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
-                  selectedCategory === category.id
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                }`}
+              <button 
+                onClick={() => setCurrentStep('assessment')}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
-                <span className="text-lg">{category.icon}</span>
-                <span>{category.name}</span>
+                Mulai Asesmen Sekarang
               </button>
-            ))}
+              
+              <p className="text-gray-500 text-sm mt-4">
+                Waktu pengerjaan: 10-15 menit
+              </p>
+            </div>
           </div>
         </div>
+      )}
 
-        {/* Content Based on Selected Category */}
-        {selectedCategory === 'explore' && (
-          <div className="space-y-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Explore Career Paths</h2>
-              <p className="text-gray-600">Discover exciting career opportunities across different industries</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {careerPaths.map((career, index) => (
-                <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200 hover:-translate-y-1">
-                  <div className="flex items-center mb-4">
-                    <span className="text-3xl mr-3">{career.icon}</span>
-                    <h3 className="text-xl font-semibold text-gray-900">{career.title}</h3>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-4">{career.description}</p>
-                  
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Key Skills:</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {career.skills.map((skill, skillIndex) => (
-                          <span key={skillIndex} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between text-sm">
-                      <div>
-                        <span className="text-gray-500">Growth: </span>
-                        <span className={`font-medium ${
-                          career.growth === 'Very High' ? 'text-green-600' :
-                          career.growth === 'High' ? 'text-blue-600' : 'text-yellow-600'
-                        }`}>
-                          {career.growth}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">Salary: </span>
-                        <span className="font-medium text-gray-900">{career.salary}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <button className="w-full mt-4 bg-gray-900 text-white py-2 px-4 rounded-lg hover:bg-gray-800 transition-colors duration-200 font-medium">
-                    Learn More
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {selectedCategory === 'quiz' && (
+      {currentStep === 'assessment' && (
+        <div className="container mx-auto px-4 py-12">
           <div className="max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-              {!isQuizStarted ? (
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-3xl">🎯</span>
+            {isProcessing ? (
+              <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+                <div className="animate-spin w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-6"></div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Menganalisis Hasil Anda</h2>
+                <p className="text-gray-600">Mohon tunggu sebentar...</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="mb-6">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-indigo-600">
+                      Pertanyaan {currentQuestionIndex + 1} dari {questions.length}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {Math.round(((currentQuestionIndex + 1) / questions.length) * 100)}%
+                    </span>
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Career Personality Quiz</h2>
-                  <p className="text-gray-600 mb-8">
-                    Discover career paths that align with your personality, interests, and strengths. 
-                    This quick assessment will provide personalized recommendations based on your responses.
-                  </p>
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 className="font-medium text-blue-900 mb-2">What you'll get:</h3>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>• Personalized career recommendations</li>
-                      <li>• Skill development suggestions</li>
-                      <li>• Industry insights and trends</li>
-                      <li>• Next steps for your career journey</li>
-                    </ul>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+                    ></div>
                   </div>
-                  <button
-                    onClick={startQuiz}
-                    className="bg-blue-600 text-white py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium text-lg"
-                  >
-                    Start Career Quiz
-                  </button>
                 </div>
-              ) : (
-                <div>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-semibold text-gray-900">
-                      Question {currentQuestion + 1} of {quizQuestions.length}
-                    </h2>
-                    <div className="bg-gray-200 rounded-full h-2 w-32">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-lg font-medium text-gray-900 mb-6">
-                    {quizQuestions[currentQuestion].question}
-                  </h3>
+
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                    {questions[currentQuestionIndex].text}
+                  </h2>
                   
                   <div className="space-y-3">
-                    {quizQuestions[currentQuestion].options.map((option, index) => (
+                    {questions[currentQuestionIndex].options.map((option, index) => (
                       <button
                         key={index}
-                        onClick={() => handleQuizAnswer(index)}
-                        className="w-full text-left p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200"
+                        onClick={() => handleAnswerSelect(option.score)}
+                        className="w-full text-left p-4 border-2 border-gray-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 border border-gray-300 rounded-full mr-3"></div>
-                          <span className="text-gray-700">{option}</span>
-                        </div>
+                        <span className="font-medium text-gray-900">{option.text}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {selectedCategory === 'skills' && (
-          <div className="space-y-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Skill Development Hub</h2>
-              <p className="text-gray-600">Build the skills you need for your dream career</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Technical Skills */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-xl">⚡</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">Technical Skills</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  {['Programming (Python, JavaScript)', 'Data Analysis', 'Digital Marketing', 'Graphic Design'].map((skill, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700">{skill}</span>
-                      <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                        Start Learning
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Soft Skills */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-xl">🤝</span>
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900">Soft Skills</h3>
-                </div>
-                
-                <div className="space-y-4">
-                  {['Communication', 'Leadership', 'Problem Solving', 'Time Management'].map((skill, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-gray-700">{skill}</span>
-                      <button className="text-green-600 hover:text-green-700 font-medium text-sm">
-                        Start Learning
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Learning Path */}
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
-              <h3 className="text-2xl font-bold mb-4">Personalized Learning Path</h3>
-              <p className="text-blue-100 mb-6">
-                Get a customized learning plan based on your career goals and current skill level
-              </p>
-              <button className="bg-white text-blue-600 py-3 px-6 rounded-lg hover:bg-blue-50 transition-colors duration-200 font-medium">
-                Create My Learning Path
-              </button>
-            </div>
-          </div>
-        )}
-
-        {selectedCategory === 'resources' && (
-          <div className="space-y-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Career Resources</h2>
-              <p className="text-gray-600">Everything you need to advance your career journey</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  title: "Resume Builder",
-                  description: "Create a professional resume with our AI-powered builder",
-                  icon: "📄",
-                  color: "blue"
-                },
-                {
-                  title: "Interview Prep",
-                  description: "Practice with mock interviews and get personalized feedback",
-                  icon: "🎤",
-                  color: "green"
-                },
-                {
-                  title: "Salary Guide",
-                  description: "Research salary ranges for different roles and locations",
-                  icon: "💰",
-                  color: "yellow"
-                },
-                {
-                  title: "Industry Reports",
-                  description: "Stay updated with the latest trends and insights",
-                  icon: "📊",
-                  color: "purple"
-                },
-                {
-                  title: "Networking Tips",
-                  description: "Learn how to build meaningful professional relationships",
-                  icon: "🌐",
-                  color: "indigo"
-                },
-                {
-                  title: "Career Events",
-                  description: "Find workshops, webinars, and career fairs near you",
-                  icon: "📅",
-                  color: "red"
-                }
-              ].map((resource, index) => (
-                <div key={index} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-200">
-                  <div className={`w-12 h-12 bg-${resource.color}-100 rounded-lg flex items-center justify-center mb-4`}>
-                    <span className="text-2xl">{resource.icon}</span>
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{resource.title}</h3>
-                  <p className="text-gray-600 mb-4">{resource.description}</p>
-                  <button className={`text-${resource.color}-600 hover:text-${resource.color}-700 font-medium text-sm flex items-center`}>
-                    Explore
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                {currentQuestionIndex > 0 && (
+                  <button
+                    onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
+                    className="text-indigo-600 hover:text-indigo-700 font-medium flex items-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
+                    <span>Kembali</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {currentStep === 'results' && results && (
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-8 text-center text-white">
+                <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+                  <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h1 className="text-3xl font-bold mb-2">Hasil Asesmen Anda</h1>
+                <p className="text-indigo-100">Tipe Kepribadian: {results.profile.title}</p>
+              </div>
+
+              <div className="p-8">
+                {/* Profile Overview */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Profil Kepribadian</h2>
+                  <p className="text-gray-600 text-lg leading-relaxed mb-6">
+                    {results.profile.description}
+                  </p>
+                  
+                  {/* Strengths */}
+                  <div className="mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3">Kekuatan Utama</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {results.profile.strengths.map((strength: string, index: number) => (
+                        <div key={index} className="bg-green-100 text-green-800 px-3 py-2 rounded-lg text-sm font-medium text-center">
+                          {strength}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Career Recommendations */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Rekomendasi Karier</h2>
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {results.profile.careers.map((career: string, index: number) => (
+                      <div key={index} className="bg-gradient-to-br from-blue-50 to-indigo-100 p-4 rounded-xl border border-blue-200">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+                            <span className="text-white font-bold text-sm">{index + 1}</span>
+                          </div>
+                          <span className="font-medium text-gray-900">{career}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Development Recommendations */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Saran Pengembangan</h2>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <p className="text-yellow-800 leading-relaxed">{results.profile.recommendations}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Score Breakdown */}
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Breakdown Skor</h2>
+                  <div className="space-y-4">
+                    {Object.entries(results.scores).map(([category, score]) => (
+                      <div key={category}>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-gray-700 capitalize">{category}</span>
+                          <span className="text-sm text-gray-500">{score}/{questions.length}</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3">
+                          <div 
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-500"
+                            style={{ width: `${(Number(score) / questions.length) * 100}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={resetAssessment}
+                    className="px-6 py-3 border-2 border-indigo-600 text-indigo-600 font-medium rounded-xl hover:bg-indigo-50 transition-all duration-200"
+                  >
+                    Ambil Asesmen Lagi
+                  </button>
+                  <button
+                    onClick={() => window.print()}
+                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
+                  >
+                    Cetak Hasil
                   </button>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
+
+  return (
+    <>
+      <DebugSession /> {/* Add debug component to see session data */}
+      <PremiumGate 
+        featureName="Panduan Karier & Asesmen"
+        description="Dapatkan panduan karier personal yang komprehensif dengan asesmen mendalam tentang kepribadian, minat, dan potensi karier Anda."
+      >
+        <CareerAssessmentContent />
+      </PremiumGate>
+    </>
+  );
+};
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session = await getSession(context);
+  
+  return {
+    props: {
+      session,
+    },
+  };
 };
 
 export default CareerGuidancePage;
