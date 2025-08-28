@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { useNeurviaStore } from '../../store/neurviaStore';
 import FlowLayout, { STEP_TITLES } from '../../components/FlowLayout';
 import { FormEvent, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import QuestionLikert from '../../components/QuestionLikert';
 import SubProgressBar from '../../components/SubProgressBar';
 
@@ -64,7 +63,17 @@ const oceanQuestions = [
 
 export default function Step1BPage() {
   const router = useRouter();
-  const { data: session, status } = useSession({ required: true, onUnauthenticated: () => router.push('/auth/signin') });
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
 
   const { psychometric, setPsychometricData } = useNeurviaStore();
   const [answers, setAnswers] = useState<Record<string, number>>(() => psychometric.ocean || {});
@@ -86,7 +95,6 @@ export default function Step1BPage() {
     router.push('/neurvia/step-1C');
   };
 
-  if (status === 'loading' || !session) return <div>Loading...</div>;
 
   return (
     <FlowLayout pageTitle="Step 1: Psychometric Assessment" currentStep={1} stepTitles={STEP_TITLES}>

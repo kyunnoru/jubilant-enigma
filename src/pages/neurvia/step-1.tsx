@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { useNeurviaStore } from '../../store/neurviaStore';
 import FlowLayout, { STEP_TITLES } from '../../components/FlowLayout';
 import { FormEvent, useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import Head from 'next/head';
 import QuestionLikert from '../../components/QuestionLikert';
 import SubProgressBar from '../../components/SubProgressBar';
@@ -17,7 +16,17 @@ const riasecQuestions = [
 
 export default function Step1APage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
   
   const { psychometric, setPsychometricData } = useNeurviaStore();
   const [answers, setAnswers] = useState<Record<string, number>>(() => psychometric.riasec || {});
@@ -39,9 +48,6 @@ export default function Step1APage() {
     router.push('/neurvia/step-1B');
   };
 
-  if (status === 'loading') {
-    return <div>Loading...</div>; // Tampilkan loading state Anda yang sudah ada
-  }
 
   return (
     <FlowLayout pageTitle="Step 1: Psychometric Assessment" currentStep={1} stepTitles={STEP_TITLES}>

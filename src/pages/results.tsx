@@ -1,37 +1,24 @@
 // src/pages/results.tsx
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect } from 'react';
 
 export default function ResultsPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
   const router = useRouter();
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
-    }
-  }, [status, router]);
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-            Loading...
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return null;
-  }
 
   // Mock data - in a real app, this would come from your database
   const mockResults = [

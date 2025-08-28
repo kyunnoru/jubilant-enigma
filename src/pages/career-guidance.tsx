@@ -1,7 +1,6 @@
 // src/pages/career-guidance.tsx
 import React, { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
-import { getSession } from 'next-auth/react';
 import PremiumGate from '../components/PremiumGate';
 
 interface Question {
@@ -442,7 +441,14 @@ const CareerGuidancePage: React.FC = () => {
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getSession(context);
+  const session = {
+    user: {
+      id: 'demo-user-id',
+      email: 'demo@example.com',
+      name: 'Demo User',
+      isPremium: false
+    }
+  };
   
   return {
     props: {

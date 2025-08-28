@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 import {
   FiMessageSquare,
   FiPlus,
@@ -39,7 +38,16 @@ export default function Sidebar({
   onDeleteConversation,
   conversations: propConversations
 }: SidebarProps) {
-  const { data: session } = useSession();
+  const { data: session } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    }
+  };
   const [conversations, setConversations] = useState<Conversation[]>(propConversations);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);

@@ -1,11 +1,19 @@
 // src/pages/assessments.tsx
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import AppNavbar from '../components/landing/Navbar';
 
 const AssessmentsPage = () => {
-  const { data: session } = useSession();
+  const { data: session } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    }
+  };
   const [activeAssessment, setActiveAssessment] = useState<string | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<any[]>([]);

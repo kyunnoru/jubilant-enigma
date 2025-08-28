@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useSession, signIn } from 'next-auth/react'
 import axios from 'axios'
 
 interface PremiumGateProps {
@@ -7,7 +6,17 @@ interface PremiumGateProps {
 }
 
 export default function PremiumGate({ children }: PremiumGateProps) {
-  const { data: session, status } = useSession()
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -18,7 +27,7 @@ export default function PremiumGate({ children }: PremiumGateProps) {
     // Check if user is authenticated first
     if (!session) {
       setError('Please sign in first to upgrade to premium')
-      signIn()
+      console.log('Sign in functionality not available')
       return
     }
 
@@ -26,13 +35,6 @@ export default function PremiumGate({ children }: PremiumGateProps) {
     window.location.href = '/payment/form'
   }
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">

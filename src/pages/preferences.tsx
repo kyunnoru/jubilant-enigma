@@ -1,11 +1,19 @@
 // src/pages/preferences.tsx
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import AppNavbar from '../components/landing/Navbar';
 
 const Preferences = () => {
-  const { data: session } = useSession();
+  const { data: session } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    }
+  };
   const [preferences, setPreferences] = useState({
     // Notification Preferences
     emailNotifications: true,

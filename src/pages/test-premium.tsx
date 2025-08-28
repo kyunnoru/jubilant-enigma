@@ -1,10 +1,19 @@
 // src/pages/test-premium.tsx
 // This is a test page to verify premium status is working
 import React from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
 
 const TestPremiumPage: React.FC = () => {
-  const { data: session, status } = useSession();
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
 
   const togglePremium = async () => {
     if (!session?.user?.id) return;
@@ -32,7 +41,6 @@ const TestPremiumPage: React.FC = () => {
     }
   };
 
-  if (status === 'loading') return <div className="p-8">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -43,7 +51,7 @@ const TestPremiumPage: React.FC = () => {
           <div className="text-center">
             <p className="text-gray-600 mb-4">You need to be signed in to test premium status.</p>
             <button
-              onClick={() => signIn()}
+              onClick={() => console.log('Sign in functionality not available')}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
             >
               Sign In
@@ -83,7 +91,7 @@ const TestPremiumPage: React.FC = () => {
               </a>
 
               <button
-                onClick={() => signOut()}
+                onClick={() => console.log('Sign out functionality not available')}
                 className="w-full bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700"
               >
                 Sign Out

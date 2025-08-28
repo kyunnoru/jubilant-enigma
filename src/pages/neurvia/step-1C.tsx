@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { useNeurviaStore } from '../../store/neurviaStore';
 import FlowLayout, { STEP_TITLES } from '../../components/FlowLayout';
 import { FormEvent, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import QuestionMultipleChoice from '../../components/QuestionMultipleChoice';
 import SubProgressBar from '../../components/SubProgressBar';
 
@@ -18,10 +17,28 @@ const vakQuestions = [
 
 export default function Step1CPage() {
   const router = useRouter();
-  const { data: session, status } = useSession({ required: true, onUnauthenticated: () => router.push('/auth/signin') });
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
 
   const { psychometric, setPsychometricData } = useNeurviaStore();
-  const [answers, setAnswers] = useState<Record<string, 'v' | 'a' | 'k'>>(() => psychometric.vak || {});
+  const [answers, setAnswers] = useState<Record<string, 'v' | 'a' | 'k'>>(() => {
+    const vak = psychometric.vak || {};
+    return Object.keys(vak).reduce((acc, key) => {
+      if (key === 'visual' && vak[key]) acc[key] = 'v';
+      else if (key === 'auditory' && vak[key]) acc[key] = 'a';
+      else if (key === 'kinesthetic' && vak[key]) acc[key] = 'k';
+      return acc;
+    }, {} as Record<string, 'v' | 'a' | 'k'>);
+  });
 
   const handleSelectAnswer = (questionId: number, value: 'v' | 'a' | 'k') => {
     setAnswers(prev => ({ ...prev, [questionId.toString()]: value }));
@@ -34,13 +51,18 @@ export default function Step1CPage() {
     if (!allQuestionsAnswered) return;
     
     // Simpan data VAK
-    setPsychometricData({ vak: answers });
+    setPsychometricData({
+      vak: {
+        visual: answers.visual === 'v',
+        auditory: answers.auditory === 'a',
+        kinesthetic: answers.kinesthetic === 'k'
+      }
+    });
     
     // Selesai dengan Step 1, sekarang arahkan ke Step 2
     router.push('/neurvia/step-2');
   };
 
-  if (status === 'loading' || !session) return <div>Loading...</div>;
 
   return (
     <FlowLayout pageTitle="Step 1: Psychometric Assessment" currentStep={1} stepTitles={STEP_TITLES}>

@@ -1,11 +1,19 @@
 // src/pages/profile.tsx
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
 import AppNavbar from '../components/landing/Navbar';
 
 const ProfileSettings = () => {
-  const { data: session } = useSession();
+  const { data: session } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    }
+  };
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     firstName: session?.user?.name?.split(' ')[0] || '',

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
@@ -15,7 +14,17 @@ interface PaymentFormData {
 }
 
 export default function PaymentForm() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = {
+    data: {
+      user: {
+        id: 'demo-user-id',
+        email: 'demo@example.com',
+        name: 'Demo User',
+        isPremium: false
+      }
+    },
+    status: 'authenticated' as const
+  };
   const router = useRouter()
   const [formData, setFormData] = useState<PaymentFormData>({
     fullName: session?.user?.name || '',
@@ -97,27 +106,6 @@ export default function PaymentForm() {
     }
   }
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Sign In Required</h1>
-          <p className="text-gray-600 mb-6">Please sign in to access the payment form.</p>
-          <Link href="/api/auth/signin" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            Sign In
-          </Link>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-white py-12 px-4 sm:px-6 lg:px-8">
