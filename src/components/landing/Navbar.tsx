@@ -1,19 +1,24 @@
 // src/components/AppNavbar.tsx
 
 import Link from 'next/link';
-import { useSession, signOut, signIn } from 'next-auth/react';
 import { useState } from 'react';
 
 const AppNavbar = () => {
-  const { data: session, status } = useSession();
+  // Simple state management for demo purposes
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = () => {
-    signOut({ callbackUrl: '/' });
+    setIsLoggedIn(false);
+    setIsProfileOpen(false);
+    // In real app: clear tokens, redirect, etc.
+    window.location.href = '/';
   };
 
   const handleLogin = () => {
-    signIn();
+    // Redirect to signin page
+    window.location.href = '/signin';
   };
 
   const getInitials = (name: string) => {
@@ -26,7 +31,7 @@ const AppNavbar = () => {
   };
 
   // Show loading state
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <nav className="w-full px-6 py-4 border-b border-slate-200/60 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -47,7 +52,7 @@ const AppNavbar = () => {
   }
 
   // Show login/signup navbar when not authenticated
-  if (!session) {
+  if (!isLoggedIn) {
     return (
       <nav className="w-full px-6 py-4 border-b border-slate-200/60 bg-white/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -127,14 +132,14 @@ const AppNavbar = () => {
               className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-50 transition-colors duration-200"
             >
               <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                {session?.user?.name ? getInitials(session.user.name) : 'U'}
+                U
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium text-slate-900">
-                  {session?.user?.name || 'User'}
+                  User
                 </p>
                 <p className="text-xs text-slate-500">
-                  {session?.user?.email || 'user@example.com'}
+                  user@example.com
                 </p>
               </div>
               <svg className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">

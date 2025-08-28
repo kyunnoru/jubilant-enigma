@@ -1,13 +1,12 @@
-// src/components/ui/AnimatedTitle.tsx
-
 interface AnimatedTitleProps {
-  text: string;
+  text?: string;
 }
 
-const AnimatedTitle = ({ text }: AnimatedTitleProps) => {
+const AnimatedTitle = ({ text = "" }: AnimatedTitleProps) => {
   return (
-    <span className="text-shimmer typing-effect">
+    <span className="text-purple-300">
       {text}
+      <span className="animate-pulse">|</span>
     </span>
   );
 };
