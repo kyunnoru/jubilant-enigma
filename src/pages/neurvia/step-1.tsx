@@ -17,12 +17,7 @@ const riasecQuestions = [
 
 export default function Step1APage() {
   const router = useRouter();
-  const { data: session, status } = useSession({
-    required: true,
-    onUnauthenticated() {
-      router.push('/auth/signin');
-    },
-  });
+  const { data: session, status } = useSession();
   
   const { psychometric, setPsychometricData } = useNeurviaStore();
   const [answers, setAnswers] = useState<Record<string, number>>(() => psychometric.riasec || {});
@@ -44,7 +39,7 @@ export default function Step1APage() {
     router.push('/neurvia/step-1B');
   };
 
-  if (status === 'loading' || !session) {
+  if (status === 'loading') {
     return <div>Loading...</div>; // Tampilkan loading state Anda yang sudah ada
   }
 
