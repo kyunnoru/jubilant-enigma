@@ -321,7 +321,7 @@ export default function PaymentForm() {
             {/* Submit Button */}
             <div className="flex space-x-4">
               <Link
-                href="/premium"
+                href="/career-guidance"
                 className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-blue-50 transition-colors text-center bg-white"
               >
                 Back
