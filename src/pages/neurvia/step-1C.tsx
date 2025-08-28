@@ -5,7 +5,7 @@ import { useNeurviaStore } from '../../store/neurviaStore';
 import FlowLayout, { STEP_TITLES } from '../../components/FlowLayout';
 import { FormEvent, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import QuestionLikert from '../../components/QuestionLikert';
+import QuestionMultipleChoice from '../../components/QuestionMultipleChoice';
 import SubProgressBar from '../../components/SubProgressBar';
 
 // --- Pertanyaan untuk Bagian 1C: Gaya Belajar (VAK) ---
@@ -21,10 +21,10 @@ export default function Step1CPage() {
   const { data: session, status } = useSession({ required: true, onUnauthenticated: () => router.push('/auth/signin') });
 
   const { psychometric, setPsychometricData } = useNeurviaStore();
-  const [answers, setAnswers] = useState<Record<string, number>>(() => psychometric.vak || {});
+  const [answers, setAnswers] = useState<Record<string, 'v' | 'a' | 'k'>>(() => psychometric.vak || {});
 
-  const handleSelectAnswer = (questionId: string, value: number) => {
-    setAnswers(prev => ({ ...prev, [questionId]: value }));
+  const handleSelectAnswer = (questionId: number, value: 'v' | 'a' | 'k') => {
+    setAnswers(prev => ({ ...prev, [questionId.toString()]: value }));
   };
 
   const allQuestionsAnswered = vakQuestions.every(q => answers[q.id] !== undefined);
@@ -53,10 +53,15 @@ export default function Step1CPage() {
           <div className="bg-white p-4 sm:p-8 rounded-2xl shadow-lg border border-slate-100">
             <div className="space-y-4">
               {vakQuestions.map((question) => (
-                <QuestionLikert
+                <QuestionMultipleChoice
                   key={question.id}
-                  questionId={question.id}
+                  questionId={parseInt(question.id.split('_')[1])}
                   questionText={question.text}
+                  options={{
+                    v: 'Visual - Saya belajar dengan melihat dan membaca',
+                    a: 'Auditori - Saya belajar dengan mendengar dan berdiskusi',
+                    k: 'Kinestetik - Saya belajar dengan melakukan dan merasakan'
+                  }}
                   selectedValue={answers[question.id] ?? null}
                   onSelect={handleSelectAnswer}
                 />

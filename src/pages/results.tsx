@@ -162,7 +162,7 @@ export default function ResultsPage() {
                 No Results Yet
               </h3>
               <p className="text-slate-600 mb-8 max-w-md mx-auto" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-                You haven't completed any career analysis yet. Start your first assessment to get personalized insights and recommendations.
+                You havent completed any career analysis yet. Start your first assessment to get personalized insights and recommendations.
               </p>
               <Link
                 href="/neurvia/step-1"

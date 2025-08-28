@@ -10,34 +10,51 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 // ============================================================================
 
 interface PsychometricData {
-  riasec: Record<string, any>;
-  ocean: Record<string, any>;
-  vak: Record<string, any>;
+  riasec: Record<string, number>;
+  ocean: Record<string, number>;
+  vak: Record<string, 'v' | 'a' | 'k'>;
 }
 
 interface AcademicData {
   nilai_rata2_mipa: number | string;
   nilai_rata2_ips: number | string;
   ekstrakurikuler_utama_id: string;
+  olimpiade_id: string;
+  olimpiade_tingkat: string;
+  olimpiade_bidang: string;
+  olimpiade_deskripsi: string;
   tipe_sekolah_id: string;
 }
 
 interface QualitativeData {
-  penasaran_mapel: string;
-  kegiatan_luar_sekolah: string;
-  ide_ciptaan: string;
+  pikiran_waktu_luang: string;
+  kegiatan_nikmat: string;
+  ciptaan_bangga: string;
+  bagian_nikmat: string;
+  keterampilan_baru: string;
+}
+
+interface ExperientialData {
+  deskripsi_proyek_pribadi: string;
+  topik_youtube_favorit: string;
+  jenis_buku_non_fiksi_terakhir: string;
+  podcast_atau_artikel_yang_diikuti: string;
+  keterampilan_otodidak: string;
+  peran_di_organisasi: string;
 }
 
 interface NeurviaState {
   psychometric: PsychometricData;
   academic: AcademicData;
   qualitative: QualitativeData;
+  experiential: ExperientialData;
 }
 
 interface NeurviaActions {
   setPsychometricData: (data: Partial<PsychometricData>) => void;
   setAcademicData: (data: Partial<AcademicData>) => void;
   setQualitativeData: (data: Partial<QualitativeData>) => void;
+  setExperientialData: (data: Partial<ExperientialData>) => void;
   reset: () => void;
 }
 
@@ -56,12 +73,26 @@ const initialState: NeurviaState = {
     nilai_rata2_mipa: '',
     nilai_rata2_ips: '',
     ekstrakurikuler_utama_id: '',
+    olimpiade_id:'',
+    olimpiade_tingkat: '',
+    olimpiade_bidang: '',
+    olimpiade_deskripsi: '',
     tipe_sekolah_id: '',
   },
   qualitative: {
-    penasaran_mapel: '',
-    kegiatan_luar_sekolah: '',
-    ide_ciptaan: '',
+    pikiran_waktu_luang: '',
+    kegiatan_nikmat: '',
+    ciptaan_bangga: '',
+    bagian_nikmat: '',
+    keterampilan_baru: '',
+  },
+  experiential: {
+    deskripsi_proyek_pribadi: '',
+    topik_youtube_favorit: '',
+    jenis_buku_non_fiksi_terakhir: '',
+    podcast_atau_artikel_yang_diikuti: '',
+    keterampilan_otodidak: '',
+    peran_di_organisasi: '',
   },
 };
 
@@ -88,6 +119,11 @@ export const useNeurviaStore = create<NeurviaState & NeurviaActions>()(
       setQualitativeData: (data) =>
         set((state) => ({
           qualitative: { ...state.qualitative, ...data },
+        })),
+
+      setExperientialData: (data) =>
+        set((state) => ({
+          experiential: { ...state.experiential, ...data },
         })),
       
       // Penting: Modifikasi 'reset' untuk juga membersihkan storage
