@@ -31,24 +31,31 @@ export default function Step1CPage() {
 
   const { psychometric, setPsychometricData } = useNeurviaStore();
   const [answers, setAnswers] = useState<Record<string, 'v' | 'a' | 'k'>>(() => {
-    const vak = psychometric.vak || {};
-    // Initialize answers based on existing VAK data
+    // Initialize with empty answers for all questions
     const initialAnswers: Record<string, 'v' | 'a' | 'k'> = {};
     
-    vakQuestions.forEach(question => {
-      if (vak.visual && question.id.startsWith('v_')) initialAnswers[question.id] = 'v';
-      else if (vak.auditory && question.id.startsWith('a_')) initialAnswers[question.id] = 'a';
-      else if (vak.kinesthetic && question.id.startsWith('k_')) initialAnswers[question.id] = 'k';
-    });
+    // If we have existing VAK data, pre-select answers based on the learning style
+    const vak = psychometric.vak || {};
+    if (vak.visual || vak.auditory || vak.kinesthetic) {
+      vakQuestions.forEach(question => {
+        if (vak.visual && question.id.startsWith('v_')) {
+          initialAnswers[question.id] = 'v';
+        } else if (vak.auditory && question.id.startsWith('a_')) {
+          initialAnswers[question.id] = 'a';
+        } else if (vak.kinesthetic && question.id.startsWith('k_')) {
+          initialAnswers[question.id] = 'k';
+        }
+      });
+    }
     
     return initialAnswers;
   });
 
-  const handleSelectAnswer = (questionId: number, value: 'v' | 'a' | 'k') => {
-    setAnswers(prev => ({ ...prev, [questionId.toString()]: value }));
+  const handleSelectAnswer = (questionId: string, value: 'v' | 'a' | 'k') => {
+    setAnswers(prev => ({ ...prev, [questionId]: value }));
   };
 
-  const allQuestionsAnswered = vakQuestions.every(q => answers[q.id] !== undefined);
+  const allQuestionsAnswered = vakQuestions.every(q => answers[q.id] !== undefined && answers[q.id] !== null);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -83,7 +90,7 @@ export default function Step1CPage() {
               {vakQuestions.map((question) => (
                 <QuestionMultipleChoice
                   key={question.id}
-                  questionId={parseInt(question.id.split('_')[1])}
+                  questionId={question.id}
                   questionText={question.text}
                   options={{
                     v: 'Visual - Saya belajar dengan melihat dan membaca',

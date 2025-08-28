@@ -1,7 +1,7 @@
 // src/components/QuestionMultipleChoice.tsx
 
 interface QuestionMultipleChoiceProps {
-  questionId: number;
+  questionId: string;
   questionText: string;
   options: {
     v: string;
@@ -9,7 +9,7 @@ interface QuestionMultipleChoiceProps {
     k: string;
   };
   selectedValue: 'v' | 'a' | 'k' | null; // Nilai yang dipilih saat ini (v, a, atau k)
-  onSelect: (questionId: number, value: 'v' | 'a' | 'k') => void;
+  onSelect: (questionId: string, value: 'v' | 'a' | 'k') => void;
 }
 
 const QuestionMultipleChoice = ({
