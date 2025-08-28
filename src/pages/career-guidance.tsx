@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getSession } from 'next-auth/react';
 import PremiumGate from '../components/PremiumGate';
-import DebugSession from '../components/DebugSession'; // Add debug component
 
 interface Question {
   id: number;
@@ -436,15 +435,9 @@ const CareerGuidancePage: React.FC = () => {
   );
 
   return (
-    <>
-      <DebugSession /> {/* Add debug component to see session data */}
-      <PremiumGate 
-        featureName="Panduan Karier & Asesmen"
-        description="Dapatkan panduan karier personal yang komprehensif dengan asesmen mendalam tentang kepribadian, minat, dan potensi karier Anda."
-      >
-        <CareerAssessmentContent />
-      </PremiumGate>
-    </>
+    <PremiumGate>
+      <CareerAssessmentContent />
+    </PremiumGate>
   );
 };
 
