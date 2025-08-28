@@ -12,7 +12,11 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 interface PsychometricData {
   riasec: Record<string, number>;
   ocean: Record<string, number>;
-  vak: Record<string, 'v' | 'a' | 'k'>;
+  vak: {
+    visual: boolean;
+    auditory: boolean;
+    kinesthetic: boolean;
+  };
 }
 
 interface AcademicData {
@@ -67,7 +71,11 @@ const initialState: NeurviaState = {
   psychometric: {
     riasec: {},
     ocean: {},
-    vak: {},
+    vak: {
+      visual: false,
+      auditory: false,
+      kinesthetic: false,
+    },
   },
   academic: {
     nilai_rata2_mipa: '',
