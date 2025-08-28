@@ -32,12 +32,16 @@ export default function Step1CPage() {
   const { psychometric, setPsychometricData } = useNeurviaStore();
   const [answers, setAnswers] = useState<Record<string, 'v' | 'a' | 'k'>>(() => {
     const vak = psychometric.vak || {};
-    return Object.keys(vak).reduce((acc, key) => {
-      if (key === 'visual' && vak[key]) acc[key] = 'v';
-      else if (key === 'auditory' && vak[key]) acc[key] = 'a';
-      else if (key === 'kinesthetic' && vak[key]) acc[key] = 'k';
-      return acc;
-    }, {} as Record<string, 'v' | 'a' | 'k'>);
+    // Initialize answers based on existing VAK data
+    const initialAnswers: Record<string, 'v' | 'a' | 'k'> = {};
+    
+    vakQuestions.forEach(question => {
+      if (vak.visual && question.id.startsWith('v_')) initialAnswers[question.id] = 'v';
+      else if (vak.auditory && question.id.startsWith('a_')) initialAnswers[question.id] = 'a';
+      else if (vak.kinesthetic && question.id.startsWith('k_')) initialAnswers[question.id] = 'k';
+    });
+    
+    return initialAnswers;
   });
 
   const handleSelectAnswer = (questionId: number, value: 'v' | 'a' | 'k') => {
@@ -51,12 +55,14 @@ export default function Step1CPage() {
     if (!allQuestionsAnswered) return;
     
     // Simpan data VAK
+    const vakData = {
+      visual: Object.values(answers).includes('v'),
+      auditory: Object.values(answers).includes('a'),
+      kinesthetic: Object.values(answers).includes('k')
+    };
+    
     setPsychometricData({
-      vak: {
-        visual: answers.visual === 'v',
-        auditory: answers.auditory === 'a',
-        kinesthetic: answers.kinesthetic === 'k'
-      }
+      vak: vakData
     });
     
     // Selesai dengan Step 1, sekarang arahkan ke Step 2

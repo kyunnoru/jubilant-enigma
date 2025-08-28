@@ -22,7 +22,7 @@ const QuestionMultipleChoice = ({
   return (
     <div className="py-6 border-b border-gray-200 last:border-b-0">
       <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{ fontFamily: 'Red Hat Display, sans-serif' }}>
-        {questionId}. {questionText}
+        {questionText}
       </h3>
       <div className="flex flex-col space-y-3">
         {/* Tombol untuk Pilihan Visual (v) */}
